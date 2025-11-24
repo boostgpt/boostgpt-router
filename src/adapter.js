@@ -64,7 +64,18 @@ export class BaseAdapter {
         vector: true
       };
 
-      const response = await this.boostgpt.chat(payload);
+      let attempts = 0;
+      let response;
+      while (attempts < 3) {
+        try {
+          response = await this.boostgpt.chat(payload);
+        } catch (error) {
+          if (attempts === 2) throw error;
+          await sleep(1000 * Math.pow(2, attempts));
+          attempts++;
+        }
+      }
+      //const response = await this.boostgpt.chat(payload);
       
       if (response.err) {
         this.logger?.error('BoostGPT Error:', response.err);
