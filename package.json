@@ -1,0 +1,76 @@
+{
+  "name": "@boostgpt/router",
+  "version": "1.0.0",
+  "description": "Omnichannel AI message router - Deploy to Discord, Telegram, Slack, WhatsApp & Crisp with one codebase",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./src/index.js",
+  "exports": {
+    ".": {
+      "import": "./src/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "node build.js",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "boostgpt",
+    "chatbot",
+    "omnichannel",
+    "router",
+    "discord",
+    "telegram",
+    "slack",
+    "whatsapp",
+    "crisp",
+    "AI",
+    "chatgpt",
+    "gpt",
+    "anthropic",
+    "xai",
+    "gemini",
+    "multi-channel",
+    "conversational-ai"
+  ],
+  "author": "David Oti <hello@davidoti.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boostgpt/boostgpt-router.git"
+  },
+  "bugs": {
+    "url": "https://github.com/boostgpt/boostgpt-router/issues"
+  },
+  "homepage": "https://github.com/boostgpt/boostgpt-router#readme",
+  "dependencies": {
+    "boostgpt": "^1.1.6",
+    "colorette": "^2.0.20",
+    "discord.js": "^14.11.0",
+    "node-telegram-bot-api": "^0.61.0",
+    "crisp-api": "^7.4.1",
+    "whatsapp-web.js": "^1.19.5",
+    "qrcode-terminal": "^0.12.0",
+    "@slack/bolt": "^3.13.0"
+  },
+  "peerDependencies": {
+    "boostgpt": "^1.1.6"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "src/",
+    "dist/",
+    "utils/",
+    "examples/",
+    "README.md",
+    "LICENSE",
+    ".env.example"
+  ]
+}
