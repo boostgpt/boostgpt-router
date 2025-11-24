@@ -72,16 +72,6 @@ router.onMessage(async (message) => {
 router.start();
 ```
 
-**Both work perfectly!** The package automatically serves the right version.
-
-## Module System Support
-
-| Import Style | Syntax | Works? |
-|--------------|--------|---------|
-| **ES Module** | `import { Router } from '@boostgpt/router'` | ✅ Native |
-| **CommonJS** | `const { Router } = require('@boostgpt/router')` | ✅ Native |
-
-No hacks, no workarounds. Just clean, intuitive imports.
 
 ## Channel Setup
 
@@ -167,6 +157,7 @@ router.onMessage(async (message, context) => {
   const response = await context.boostgpt.chat({
     bot_id: context.adapter.botId,
     message: message.content,
+    channel: context.channel,
     chat_id: `${context.channel}-${message.userId}`
   });
   
@@ -265,31 +256,10 @@ export class CustomAdapter extends BaseAdapter {
 
 ## Environment Variables
 
-Create a `.env` file:
+Create a `.env` file from the .env.example:
 
-```env
-# BoostGPT
-BOOSTGPT_API_KEY=your_api_key
-BOOSTGPT_PROJECT_ID=your_project_id
-BOOSTGPT_BOT_ID=your_bot_id
-
-# Discord
-DISCORD_TOKEN=your_discord_token
-
-# Telegram
-TELEGRAM_TOKEN=your_telegram_token
-
-# Slack
-SLACK_BOT_TOKEN=xoxb-your-token
-SLACK_SIGNING_SECRET=your_secret
-SLACK_APP_TOKEN=xapp-your-token
-
-# WhatsApp
-WHATSAPP_CONTACTS=2349012345678
-
-# Crisp
-CRISP_PLUGIN_IDENTIFIER=your_identifier
-CRISP_PLUGIN_KEY=your_key
+```bash
+cp .env.example .env
 ```
 
 ## Troubleshooting

@@ -59,6 +59,7 @@ export class BaseAdapter {
         top: options.top || this.top,
         max_reply_tokens: options.maxReplyTokens || this.maxReplyTokens,
         chat_id: chatId,
+        channel: this.channelName,
         stream: false,
         vector: true
       };

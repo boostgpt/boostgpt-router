@@ -1,5 +1,6 @@
 import { Client as WhatsAppClient, LocalAuth } from 'whatsapp-web.js';
 import { BaseAdapter } from '../adapter.js';
+import qrcode from 'qrcode-terminal';
 
 export class WhatsAppAdapter extends BaseAdapter {
   constructor({ 
@@ -29,7 +30,8 @@ export class WhatsAppAdapter extends BaseAdapter {
     return new Promise((resolve, reject) => {
       this.client.on('qr', (qr) => {
         this.logger?.info('QR Code received. Scan with your phone:');
-        console.log(qr);
+        //console.log(qr);
+        qrcode.generate(qr, { small: true });
       });
 
       this.client.on('authenticated', () => {
