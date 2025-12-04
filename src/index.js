@@ -4,7 +4,7 @@
  */
 
 export { Router } from './router.js';
-export { BaseAdapter } from './base-adapter.js';
+export { BaseAdapter } from './adapter.js';
 export { DiscordAdapter } from './adapters/discord.js';
 export { TelegramAdapter } from './adapters/telegram.js';
 export { SlackAdapter } from './adapters/slack.js';

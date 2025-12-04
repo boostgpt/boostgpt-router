@@ -46,7 +46,7 @@
   },
   "homepage": "https://github.com/boostgpt/boostgpt-router#readme",
   "dependencies": {
-    "boostgpt": "^1.1.6",
+    "boostgpt": "^2.0.0",
     "colorette": "^2.0.20",
     "discord.js": "^14.11.0",
     "node-telegram-bot-api": "^0.61.0",
