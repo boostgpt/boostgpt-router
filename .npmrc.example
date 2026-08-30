@@ -1,0 +1,3 @@
+legacy-peer-deps=true
+# Add your auth token (don't commit the real one):
+# //registry.npmjs.org/:_authToken=YOUR_TOKEN_HERE
