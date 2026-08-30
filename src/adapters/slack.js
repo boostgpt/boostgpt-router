@@ -1,4 +1,3 @@
-import { App } from '@slack/bolt';
 import { BaseAdapter } from '../adapter.js';
 
 export class SlackAdapter extends BaseAdapter {
@@ -22,22 +21,28 @@ export class SlackAdapter extends BaseAdapter {
     this.slackSigningSecret = slackSigningSecret;
     this.port = port;
 
-    const appConfig = {
+    this.appConfig = {
       token: slackToken,
       signingSecret: slackSigningSecret
     };
 
     if (slackAppToken) {
-      appConfig.socketMode = true;
-      appConfig.appToken = slackAppToken;
+      this.appConfig.socketMode = true;
+      this.appConfig.appToken = slackAppToken;
     } else {
-      appConfig.port = port;
+      this.appConfig.port = port;
     }
 
-    this.client = new App(appConfig);
+    // this.client is created in start(), once the SDK is loaded.
+    this.client = null;
   }
 
   async start() {
+    this.assertConfigured();
+
+    const { App } = await this.loadChannelModule('@slack/bolt');
+    this.client = new App(this.appConfig);
+
     this.client.message(async ({ message, say }) => {
       await this._handleSlackMessage(message, say);
     });
@@ -75,6 +80,10 @@ export class SlackAdapter extends BaseAdapter {
         say: say,
         client: this.client
       });
+
+      if (reply === null || reply === undefined || reply === '') {
+        return;
+      }
 
       const responseOptions = {
         text: reply

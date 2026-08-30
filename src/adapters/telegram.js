@@ -1,4 +1,3 @@
-import TelegramBot from 'node-telegram-bot-api';
 import { BaseAdapter } from '../adapter.js';
 
 export class TelegramAdapter extends BaseAdapter {
@@ -15,11 +14,16 @@ export class TelegramAdapter extends BaseAdapter {
 
     this.telegramToken = telegramToken;
     this.welcomeMessage = welcomeMessage;
-    this.client = new TelegramBot(telegramToken, { polling: true });
+    // this.client is created in start(), once the SDK is loaded.
+    this.client = null;
   }
 
   async start() {
+    this.assertConfigured();
     this.logger?.info('Bot starting...');
+
+    const { default: TelegramBot } = await this.loadChannelModule('node-telegram-bot-api');
+    this.client = new TelegramBot(this.telegramToken, { polling: true });
     
     this.client.on('message', async (message) => {
       await this._handleTelegramMessage(message);
@@ -69,6 +73,11 @@ export class TelegramAdapter extends BaseAdapter {
         telegramMessage: message,
         client: this.client
       });
+
+      if (reply === null || reply === undefined || reply === '') {
+        
+        return;
+      }
 
       await this.client.sendMessage(chatId, reply);
     } catch (error) {

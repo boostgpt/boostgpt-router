@@ -1,4 +1,3 @@
-import Crisp from 'crisp-api';
 import { BaseAdapter } from '../adapter.js';
 
 export class CrispAdapter extends BaseAdapter {
@@ -23,12 +22,17 @@ export class CrispAdapter extends BaseAdapter {
     this.websiteId = websiteId;
     this.onlyWhenOffline = onlyWhenOffline;
     
-    this.client = new Crisp();
-    this.client.authenticateTier('plugin', crispIdentifier, crispKey);
+    // this.client is created in start(), once the SDK is loaded.
+    this.client = null;
   }
 
   async start() {
+    this.assertConfigured();
     this.logger?.info('Bot starting...');
+
+    const { default: Crisp } = await this.loadChannelModule('crisp-api');
+    this.client = new Crisp();
+    this.client.authenticateTier('plugin', this.crispIdentifier, this.crispKey);
 
     this.client.on('message:send', async (message) => {
       await this._handleCrispMessage(message);
@@ -78,6 +82,11 @@ export class CrispAdapter extends BaseAdapter {
         crispMessage: message,
         client: this.client
       });
+
+      if (reply === null || reply === undefined || reply === '') {
+        
+        return;
+      }
 
       await this._sendCrispMessage(message.website_id, message.session_id, reply);
     } catch (error) {

@@ -1,6 +1,4 @@
-import { Client as WhatsAppClient, LocalAuth } from 'whatsapp-web.js';
 import { BaseAdapter } from '../adapter.js';
-import qrcode from 'qrcode-terminal';
 
 export class WhatsAppAdapter extends BaseAdapter {
   constructor({ 
@@ -12,21 +10,31 @@ export class WhatsAppAdapter extends BaseAdapter {
     super({ ...baseOptions, channelName: 'whatsapp' });
 
     this.allowedContacts = allowedContacts;
-    
+    this.useLocalAuth = useLocalAuth;
+    this.puppeteerArgs = puppeteerArgs;
+    // this.client is created in start(), once the SDK is loaded.
+    this.client = null;
+  }
+
+  async start() {
+    this.assertConfigured();
+
+    const { Client: WhatsAppClient, LocalAuth } =
+      await this.loadChannelModule('whatsapp-web.js');
+    const { default: qrcode } = await this.loadChannelModule('qrcode-terminal');
+
     const clientConfig = {
       puppeteer: {
-        args: puppeteerArgs
+        args: this.puppeteerArgs
       }
     };
 
-    if (useLocalAuth) {
+    if (this.useLocalAuth) {
       clientConfig.authStrategy = new LocalAuth();
     }
 
     this.client = new WhatsAppClient(clientConfig);
-  }
 
-  async start() {
     return new Promise((resolve, reject) => {
       this.client.on('qr', (qr) => {
         this.logger?.info('QR Code received. Scan with your phone:');
@@ -89,6 +97,11 @@ export class WhatsAppAdapter extends BaseAdapter {
       });
 
       await chat.clearState();
+
+      if (reply === null || reply === undefined || reply === '') {
+        return;
+      }
+
       await chat.sendMessage(reply);
     } catch (error) {
       this.logger?.error('Error handling message:', error);

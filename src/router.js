@@ -43,24 +43,34 @@ export class Router {
     });
   }
 
+  /**
+   * Wrap a user handler so it receives the router context and routes failures
+   * to the error handler. Shared by onMessage() and addAdapter() so adapters
+   * added later behave identically to those passed to the constructor.
+   */
+  _wrapHandler(handler) {
+    return async (message, context) => {
+      try {
+        return await handler(message, {
+          ...context,
+          router: this,
+          boostgpt: this.boostgpt
+        });
+      } catch (error) {
+        if (this.errorHandler) {
+          return await this.errorHandler(error, message, context);
+        }
+        throw error;
+      }
+    };
+  }
+
   onMessage(handler) {
     this.messageHandler = handler;
-    
+
+    const wrapped = this._wrapHandler(handler);
     this.adapters.forEach(adapter => {
-      adapter.setMessageHandler(async (message, context) => {
-        try {
-          return await handler(message, {
-            ...context,
-            router: this,
-            boostgpt: this.boostgpt
-          });
-        } catch (error) {
-          if (this.errorHandler) {
-            return await this.errorHandler(error, message, context);
-          }
-          throw error;
-        }
-      });
+      adapter.setMessageHandler(wrapped);
     });
 
     return this;
@@ -78,6 +88,8 @@ export class Router {
     }
 
     this.logger?.info(`Starting ${this.adapters.length} adapters...`);
+
+    this.adapters.forEach(adapter => adapter.assertConfigured());
 
     try {
       await Promise.all(
@@ -169,7 +181,7 @@ export class Router {
     return {
       isStarted: this.isStarted,
       adapters: this.adapters.map(a => a.getStatus()),
-      projectId: this.boostgpt.body.project_id,
+      projectId: this.boostgpt.project_id,
       defaultBotId: this.defaultBotId
     };
   }
@@ -183,7 +195,7 @@ export class Router {
     }
 
     if (this.messageHandler) {
-      adapter.setMessageHandler(this.messageHandler);
+      adapter.setMessageHandler(this._wrapHandler(this.messageHandler));
     }
 
     this.adapters.push(adapter);

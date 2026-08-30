@@ -1,4 +1,3 @@
-import { Client, GatewayIntentBits, Partials } from 'discord.js';
 import { BaseAdapter } from '../adapter.js';
 
 export class DiscordAdapter extends BaseAdapter {
@@ -20,6 +19,14 @@ export class DiscordAdapter extends BaseAdapter {
     this.replyInDMs = replyInDMs;
     this.replyOnMention = replyOnMention;
 
+    // this.client is created in start(), once the SDK is loaded.
+    this.client = null;
+  }
+
+  async start() {
+    this.assertConfigured();
+
+    const { Client, GatewayIntentBits, Partials } = await this.loadChannelModule('discord.js');
     this.client = new Client({
       intents: [
         GatewayIntentBits.Guilds,
@@ -32,9 +39,7 @@ export class DiscordAdapter extends BaseAdapter {
         Partials.Message
       ]
     });
-  }
 
-  async start() {
     return new Promise((resolve, reject) => {
       this.client.once('ready', () => {
         this.logger?.logConnection('Discord', 'connected');
@@ -88,6 +93,11 @@ export class DiscordAdapter extends BaseAdapter {
         discordMessage: message,
         client: this.client
       });
+
+      if (reply === null || reply === undefined || reply === '') {
+        
+        return;
+      }
 
       if (message.mentions.has(this.client.user) && this.replyOnMention) {
         await message.reply(reply);

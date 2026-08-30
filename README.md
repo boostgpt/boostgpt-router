@@ -28,6 +28,24 @@
 npm install @boostgpt/router boostgpt
 ```
 
+Then install only the channels you actually use:
+
+```bash
+npm install node-telegram-bot-api          # Telegram
+npm install discord.js                     # Discord
+npm install @slack/bolt                    # Slack
+npm install crisp-api                      # Crisp
+npm install whatsapp-web.js qrcode-terminal  # WhatsApp
+```
+
+Channel SDKs are optional peer dependencies, so nothing you do not use gets
+installed. This matters most for WhatsApp: `whatsapp-web.js` depends on
+puppeteer, which downloads a Chromium build. Each adapter loads its SDK when
+`start()` runs, and tells you what to install if it is missing.
+
+`boostgpt` (>= 7.0.0) is a required peer, so your app and the router share one
+client instance.
+
 ### ES Module Example (Recommended)
 
 ```javascript
@@ -157,12 +175,25 @@ router.onMessage(async (message, context) => {
   const response = await context.boostgpt.chat({
     bot_id: context.adapter.botId,
     message: message.content,
-    channel: context.channel,
     chat_id: `${context.channel}-${message.userId}`
   });
   
   return response.response.chat.reply;
 });
+```
+
+### Tool calling
+
+Set `reasoningMode: 'agent'` to run BoostGPT's server-side tool loop. Tools are
+configured on the agent itself, so nothing changes in your handler — the reply
+you get back is the result after any tools have run.
+
+```javascript
+new TelegramAdapter({
+  telegramToken: process.env.TELEGRAM_TOKEN,
+  reasoningMode: 'agent',   // omit for standard chat
+  memory: true              // search the agent's indexed training data
+})
 ```
 
 ### Error Handling
@@ -233,6 +264,15 @@ new Router({
 }
 ```
 
+## Adapter lifecycle
+
+`adapter.client` — the underlying Discord/Telegram/WhatsApp client — is `null`
+until `start()` resolves, because the channel SDK is imported on demand. Reach
+for it after `router.start()`, or from inside a message handler.
+
+`Router.start()` validates every adapter before starting any of them, so a
+missing `botId` fails before a Chromium session or gateway socket is opened.
+
 ## Building Custom Adapters
 
 ```javascript
@@ -264,11 +304,9 @@ cp .env.example .env
 
 ## Troubleshooting
 
-### "Cannot find module"
-Make sure you've installed dependencies:
-```bash
-npm install
-```
+### "The X adapter needs the Y package"
+Channel SDKs are optional peer dependencies. Install the one named in the
+error, e.g. `npm install node-telegram-bot-api`.
 
 ### Discord bot not responding
 - Enable `MESSAGE_CONTENT` intent in Discord Developer Portal
